@@ -12,15 +12,14 @@ CHANNEL_ID = os.getenv("CHANNEL_ID")  # @video_transkrib или -100xxxxxxx
 
 async def publish_to_channel(bot: Bot, title: str, body: str, image_url: str = None) -> int:
     """Публикует пост в канал. Возвращает message_id."""
-    full_text = f"*{title}*\n\n{body}"
-    
+    full_text = f"<b>{title}</b>\n\n{body}"    
     # Telegram limit для caption — 1024 chars, для message — 4096
     if image_url and len(full_text) <= 1024:
         msg = await bot.send_photo(
             chat_id=CHANNEL_ID,
             photo=image_url,
             caption=full_text,
-            parse_mode="Markdown",
+            parse_mode="HTML",
         )
     else:
         # Если caption слишком длинный — отправляем отдельно картинку и текст
@@ -29,7 +28,7 @@ async def publish_to_channel(bot: Bot, title: str, body: str, image_url: str = N
         msg = await bot.send_message(
             chat_id=CHANNEL_ID,
             text=full_text,
-            parse_mode="Markdown",
+            parse_mode="HTML",
             disable_web_page_preview=False,
         )
     
