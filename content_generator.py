@@ -59,4 +59,13 @@ def generate_post(day_of_week: int) -> Tuple[str, str, str, str]:
     
     # Парсим JSON
     import json
-    # На случай если Claude обернул в 
+    import re
+    cleaned = text.strip()
+    json_match = re.search(r"{.*}", cleaned, re.DOTALL)
+    if not json_match:
+        raise ValueError(f"Claude не вернул JSON. Ответ: {cleaned[:200]}")
+    cleaned = json_match.group(0)
+    data = json.loads(cleaned)
+
+    topic_category = WEEKLY_TOPICS[day_of_week]["category"]
+    return data["title"], data["body"], data["image_prompt"], topic_category
