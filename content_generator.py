@@ -21,9 +21,12 @@ def generate_post(day_of_week: int) -> Tuple[str, str, str, str]:
         client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         response = client.messages.create(model=CLAUDE_MODEL, max_tokens=MAX_TOKENS, system=topic["system_prompt"], messages=[{"role": "user", "content": user_prompt}])
         text = response.content[0].text
+        import re
         cleaned = text.strip()
-        cleaned = cleaned[cleaned.find("\n")+1:] if cleaned.startswith("```") and "\n" in cleaned else cleaned
-        cleaned = cleaned.rstrip()[:-3].rstrip() if cleaned.rstrip().endswith("```") else cleaned
+        json_match = re.search(r'{.*}', cleaned, re.DOTALL)
+        if not json_match:
+            raise ValueError("Claude не вернул JSON. Ответ: " + cleaned[:200])
+        cleaned = json_match.group(0)
         data = json.loads(cleaned)
         return data["title"], data["body"], data["image_prompt"], topic["category"]
     
