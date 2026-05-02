@@ -106,7 +106,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     elif action == "regenerate":
         update_status(post_id, "rejected", rejection_reason="regenerate_requested")
-        await query.edit_message_caption(caption="🔄 Перегенерирую...")
+        try:
+            await query.edit_message_caption(caption="🔄 Перегенерирую...")
+        except Exception:
+            await query.edit_message_text(text="🔄 Перегенерирую...")
         await generate_and_send_draft(context)
     
     elif action == "reject":
