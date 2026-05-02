@@ -114,7 +114,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     elif action == "reject":
         update_status(post_id, "rejected", rejection_reason="admin_rejected")
-        await query.edit_message_caption(caption="❌ Отклонено")
+        try:
+            await query.edit_message_caption(caption="❌ Отклонено.")
+        except Exception:
+            await query.edit_message_text(text="❌ Отклонено.")
 
 
 def main() -> None:
