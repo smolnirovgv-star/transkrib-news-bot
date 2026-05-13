@@ -69,9 +69,16 @@ async def generate_and_send_draft(context: ContextTypes.DEFAULT_TYPE) -> None:
                 caption=preview,
                 parse_mode="Markdown",
                 reply_markup=keyboard,
+                read_timeout=60,
+                connect_timeout=30,
             )
         else:
-            await context.bot.send_photo(chat_id=ADMIN_ID, photo=image_url)
+            await context.bot.send_photo(
+                chat_id=ADMIN_ID,
+                photo=image_url,
+                read_timeout=60,
+                connect_timeout=30,
+            )
             await context.bot.send_message(
                 chat_id=ADMIN_ID,
                 text=preview,

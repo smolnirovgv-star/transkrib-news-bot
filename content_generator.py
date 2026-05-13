@@ -27,6 +27,18 @@ def generate_post(day_of_week: int) -> Tuple[str, str, str, str]:
         if not json_match:
             raise ValueError("Claude не вернул JSON. Ответ: " + cleaned[:200])
         cleaned = json_match.group(0)
-        data = json.loads(cleaned)
+
+        # Logging for future diagnostics
+        logger.info(f"[CONTENT_GEN] Claude raw response length={len(cleaned)} preview={cleaned[:200]!r}")
+
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            logger.warning(f"[CONTENT_GEN] First JSON parse failed: {e}. Attempting newline normalization.")
+            # Claude-sonnet-4-20250514 sometimes returns literal newlines inside JSON string values.
+            # RFC 8259 forbids this -- normalize to escape sequences.
+            cleaned_normalized = cleaned.replace('\r\n', '\n').replace('\n', '\\n')
+            data = json.loads(cleaned_normalized)
+            logger.info("[CONTENT_GEN] Newline normalization succeeded.")
         return data["title"], data["body"], data["image_prompt"], topic["category"]
     
