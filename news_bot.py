@@ -1,6 +1,7 @@
 """Главный модуль: scheduler + approval flow в @TranskribAdmin_Bot."""
 
 import os
+import html
 import logging
 from datetime import datetime, time, timezone, timedelta
 
@@ -52,7 +53,7 @@ async def generate_and_send_draft(context: ContextTypes.DEFAULT_TYPE) -> None:
         image_url = generate_image_url(image_prompt)
         post_id = save_draft(day_of_week, category, title, body, image_url, image_prompt)
         
-        preview = f"*{title}*\n\n{body}\n\n_Image prompt: {image_prompt}_"
+        preview = f"<b>{html.escape(title)}</b>\n\n{html.escape(body)}\n\n<i>Image prompt: {html.escape(image_prompt)}</i>"
         keyboard = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("✅ Publish", callback_data=f"approve:{post_id}"),
@@ -67,7 +68,7 @@ async def generate_and_send_draft(context: ContextTypes.DEFAULT_TYPE) -> None:
                 chat_id=ADMIN_ID,
                 photo=image_url,
                 caption=preview,
-                parse_mode="Markdown",
+                parse_mode="HTML",
                 reply_markup=keyboard,
                 read_timeout=60,
                 connect_timeout=30,
@@ -82,7 +83,7 @@ async def generate_and_send_draft(context: ContextTypes.DEFAULT_TYPE) -> None:
             await context.bot.send_message(
                 chat_id=ADMIN_ID,
                 text=preview,
-                parse_mode="Markdown",
+                parse_mode="HTML",
                 reply_markup=keyboard,
             )
         
