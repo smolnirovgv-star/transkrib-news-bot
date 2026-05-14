@@ -9,7 +9,7 @@
 ## Канал и сайт
 - @video_transkrib — канал публикации.
 - transkrib.su — лендинг.
-- schwed.2000@mail.ru — поддержка.
+- info@transkrib.su — поддержка.
 
 ## ПРАВИЛА ФОРМАТА (КРИТИЧНО)
 - Имена пишутся **полностью** с подчёркиваниями: `@transkrib_smartcut_bot`. Сокращения `@transkribsmartcutbot` или `@transkribplusbot` — **ОШИБКА**.
