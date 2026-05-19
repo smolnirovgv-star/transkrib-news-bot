@@ -1,8 +1,8 @@
 # Канонические имена
 
 ## Боты
-- @transkrib_smartcut_bot — Transkrib SmartCut AI. Prod-бот для транскрипции и нарезки **YouTube** видео.
-- @transkrib_plus_bot — Transkrib Plus. Prod-бот для транскрипции и нарезки **видео с телефона** (загружается напрямую в Telegram). YouTube **не поддерживает**.
+- @transkrib_smartcut_bot — Transkrib SmartCut AI. Prod-бот для транскрипции и нарезки **видеофайлов с телефона** (загружается напрямую в Telegram, до 20 МБ). YouTube **не поддерживает**.
+- @transkrib_plus_bot — Transkrib Plus. Основной prod-бот для транскрипции и нарезки **видео с телефона** (загружается напрямую в Telegram, до 20 МБ). YouTube **не поддерживает**. **Используй для CTA.**
 - @TranskribAdmin_Bot — Transkrib Monitor. Внутренний мониторинг, **не для публикации**.
 - @Transkrib_News_Bot — этот бот, генератор постов. **Не упоминать в постах**.
 
