@@ -89,8 +89,11 @@ async def generate_and_send_draft(context: ContextTypes.DEFAULT_TYPE) -> None:
         
         logger.info(f"[DRAFT] Sent draft {post_id} to admin")
     except Exception as e:
-        logger.error(f"[DRAFT] Generation failed: {e}", exc_info=True)
-        await context.bot.send_message(chat_id=ADMIN_ID, text=f"❌ Ошибка генерации: {e}")
+        logger.error(f"[DRAFT] Generation failed after all retries: {e}", exc_info=True)
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"❌ Пост на сегодня не сгенерирован — все попытки исчерпаны. День пропущен.\n\nОшибка: {e}"
+        )
 
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
