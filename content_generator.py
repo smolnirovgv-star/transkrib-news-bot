@@ -44,24 +44,49 @@ def generate_post(day_of_week: int) -> Tuple[str, str, str, str]:
         )
         response = client.messages.create(model=CLAUDE_MODEL, max_tokens=MAX_TOKENS, system=system, messages=[{"role": "user", "content": user_prompt}])
         text = response.content[0].text
-        import re
-        cleaned = text.strip()
-        json_match = re.search(r'{.*}', cleaned, re.DOTALL)
-        if not json_match:
-            raise ValueError("Claude не вернул JSON. Ответ: " + cleaned[:200])
-        cleaned = json_match.group(0)
+        raw = text.strip()
+        REQUIRED_FIELDS = ['title', 'body', 'image_prompt']
+        decoder = json.JSONDecoder()
+        data = None
+        search_from = 0
 
-        # Logging for future diagnostics
-        logger.info(f"[CONTENT_GEN] Claude raw response length={len(cleaned)} preview={cleaned[:200]!r}")
+        logger.info(f"[CONTENT_GEN] Claude raw response length={len(raw)} preview={raw[:200]!r}")
 
-        try:
-            data = json.loads(cleaned)
-        except json.JSONDecodeError as e:
-            logger.warning(f"[CONTENT_GEN] First JSON parse failed: {e}. Attempting newline normalization.")
-            # Claude-sonnet-4-20250514 sometimes returns literal newlines inside JSON string values.
-            # RFC 8259 forbids this -- normalize to escape sequences.
-            cleaned_normalized = cleaned.replace('\r\n', '\n').replace('\n', '\\n')
-            data = json.loads(cleaned_normalized)
-            logger.info("[CONTENT_GEN] Newline normalization succeeded.")
+        for attempt in range(3):
+            start = raw.find('{', search_from)
+            if start == -1:
+                break
+            end_pos = start + 1  # fallback if raw_decode raises
+            try:
+                candidate, end_pos = decoder.raw_decode(raw, start)
+            except json.JSONDecodeError as e:
+                if attempt == 0:
+                    # Claude sometimes returns literal newlines in JSON strings (RFC 8259 violation)
+                    normalized_tail = raw[start:].replace('\r\n', '\n').replace('\n', '\\n')
+                    try:
+                        candidate, _ = decoder.raw_decode(normalized_tail)
+                        logger.info("[CONTENT_GEN] Newline normalization succeeded.")
+                    except json.JSONDecodeError as e2:
+                        logger.warning(f"[CONTENT_GEN] Attempt {attempt+1} failed after normalization: {e2}")
+                        search_from = start + 1
+                        continue
+                else:
+                    logger.warning(f"[CONTENT_GEN] Attempt {attempt+1} raw_decode failed: {e}")
+                    search_from = start + 1
+                    continue
+
+            if isinstance(candidate, dict) and all(f in candidate for f in REQUIRED_FIELDS):
+                data = candidate
+                logger.info(f"[CONTENT_GEN] Valid JSON found on attempt {attempt+1}")
+                break
+            else:
+                logger.warning(
+                    f"[CONTENT_GEN] Attempt {attempt+1} missing required fields. "
+                    f"Got: {list(candidate.keys()) if isinstance(candidate, dict) else type(candidate)}"
+                )
+                search_from = end_pos
+
+        if data is None:
+            raise ValueError(f"Could not find valid post JSON with fields {REQUIRED_FIELDS}. Raw: " + raw[:200])
         return data["title"], data["body"], data["image_prompt"], topic["category"]
     
