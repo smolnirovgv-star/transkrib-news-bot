@@ -2,8 +2,11 @@
 import os
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Tuple
+import anthropic
+import httpx
 from anthropic import Anthropic
 from topics import WEEKLY_TOPICS
 from deduplication import get_recent_titles
@@ -96,9 +99,11 @@ def generate_post(day_of_week: int) -> Tuple[str, str, str, str]:
                     logger.info(f"[CONTENT_GEN] Succeeded on attempt {attempt+1}/3. Sonnet skipped field on earlier tries.")
                 return data["title"], data["body"], data["image_prompt"], topic["category"]
 
-            except (ValueError, json.JSONDecodeError) as e:
+            except (ValueError, json.JSONDecodeError, anthropic.APIError, httpx.TimeoutException, httpx.ConnectError) as e:
                 last_error = e
                 logger.warning(f"[CONTENT_GEN] Attempt {attempt+1}/3 failed: {e}. Retrying...")
+                if attempt < 2:
+                    time.sleep(2)
 
         logger.error(f"[CONTENT_GEN] All 3 attempts failed for day {day_of_week}. Last error: {last_error}")
         raise last_error
